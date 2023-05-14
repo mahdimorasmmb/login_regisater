@@ -1,24 +1,33 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import avatar from "../assets/profile.png";
 import { useFormik } from "formik";
 import { usernameValidate } from "../helper/validate";
 import { Toaster } from "react-hot-toast";
+import { useAuthStore } from "../store/store";
+
 
 const Username = () => {
+  const navigate = useNavigate();
+  const setUsername = useAuthStore((state) => state.setUsername)
+ 
+  
+
   const formik = useFormik({
     initialValues: {
       username: "",
     },
-    validate:usernameValidate,
+    validate: usernameValidate,
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      // console.log(values);
+      setUsername(values.username);
+      navigate("/password");
     },
   });
+
   return (
     <div className='container mx-auto'>
-      <Toaster position="top-center" reverseOrder={false}/>
+      <Toaster position='top-center' reverseOrder={false} />
       <div className='flex justify-center items-center  h-screen'>
         <div
           className='
@@ -47,7 +56,7 @@ const Username = () => {
             </div>
             <div className='textbox flex flex-col items-center gap-6'>
               <input
-                {...formik.getFieldProps('username')}
+                {...formik.getFieldProps("username")}
                 className='border-0 px-5 py-4 rounded-xl w-3/4 shadow-md text-lg focus:outline-none'
                 type='text'
                 placeholder='Username'

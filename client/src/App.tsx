@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Loding from "./components/Loding";
 import PageNotFound from "./components/PageNotFound";
+import AuthorizeUser from "./middleware/auth";
 
 const Username = React.lazy(() => import("./components/Username"));
 const Password = React.lazy(() => import("./components/Password"));
@@ -9,7 +10,6 @@ const Reset = React.lazy(() => import("./components/Reset"));
 const Register = React.lazy(() => import("./components/Register"));
 const Recovery = React.lazy(() => import("./components/Recovery"));
 const Profile = React.lazy(() => import("./components/Profile"));
-
 
 const router = createBrowserRouter([
   {
@@ -39,9 +39,11 @@ const router = createBrowserRouter([
   {
     path: "/profile",
     element: (
-      <Suspense fallback={<Loding />}>
-        <Profile />
-      </Suspense>
+      <AuthorizeUser>
+        <Suspense fallback={<Loding />}>
+          <Profile />
+        </Suspense>
+      </AuthorizeUser>
     ),
   },
   {
@@ -62,11 +64,8 @@ const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: (
-    <PageNotFound/>
-    ),
+    element: <PageNotFound />,
   },
-  
 ]);
 
 function App() {

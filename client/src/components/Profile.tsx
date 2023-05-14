@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import avatar from "../assets/profile.png";
 import { useFormik } from "formik";
 import {
@@ -7,25 +7,41 @@ import {
   registerValidation,
   usernameValidate,
 } from "../helper/validate";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 import { useState } from "react";
 import convertToBase64 from "../helper/convert";
+import useFetch from "../hooks/fetch.hook";
+import { useAuthStore } from "../store/store";
+import { updateUser } from "../helper/helper";
 
 const Profile = () => {
+  const navigate = useNavigate();
+  const [{ isLoading, apiData, serverError }] = useFetch();
   const [file, setFile] = useState("");
+
   const formik = useFormik({
     initialValues: {
-      firstName:"",
-      lastName:"",
-      email:"",
-      mobile:"",
-      address:"",
+      firstName: apiData?.firstName || "",
+      lastName: apiData?.lastName || "",
+      email: apiData?.email || "",
+      mobile: apiData?.mobile || "",
+      address: apiData?.address || "",
     },
+    enableReinitialize: true,
     validate: profileValidation,
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      values = await Object.assign(values, { profile: file || "" });
+      values = Object.assign(values, {
+        profile: file || apiData?.profile || "",
+      });
+      const updatePromise = updateUser(values);
+
+      toast.promise(updatePromise, {
+        loading: "Updating...",
+        success: <b>Update Successfully...!</b>,
+        error: <b>Could not Update</b>,
+      });
     },
   });
 
@@ -38,6 +54,16 @@ const Profile = () => {
       }
     }
   };
+
+  function userLogout() {
+    localStorage.removeItem("token");
+    navigate("/");
+  }
+
+  if (isLoading) return <h1 className='text-2xl font-bold'> isLoading</h1>;
+  if (serverError)
+    return <h1 className='text-xl text-red-500'> {serverError.message}</h1>;
+
   return (
     <div className='container mx-auto'>
       <Toaster position='top-center' reverseOrder={false} />
@@ -65,7 +91,7 @@ const Profile = () => {
               <label htmlFor='profile'>
                 <img
                   className='border-4 border-gray-100 w-[135px] rounded-full shadow-lg  cursor-pointer hover:border-gray-200'
-                  src={file || avatar}
+                  src={apiData?.profile || file || avatar}
                   alt='avatar'
                 />
                 <input
@@ -107,7 +133,7 @@ const Profile = () => {
                   placeholder='Email'
                 />
               </div>
-             
+
               <input
                 {...formik.getFieldProps("address")}
                 className='border-0 px-5 py-4 rounded-xl w-3/4 shadow-md text-lg focus:outline-none'
@@ -124,9 +150,9 @@ const Profile = () => {
             <div className='text-center py-4'>
               <span>
                 Already Register?
-                <Link className='text-red-500' to='/'>
-                  Login Now
-                </Link>
+                <button className='text-red-500' onClick={userLogout}>
+                  Logout
+                </button>
               </span>
             </div>
           </form>

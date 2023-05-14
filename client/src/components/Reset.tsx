@@ -2,9 +2,14 @@
 
 import { useFormik } from "formik";
 import {  restPassordValidate } from "../helper/validate";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
+import { useAuthStore } from "../store/store";
+import { resetPassword } from "../helper/helper";
+import { useNavigate } from "react-router-dom";
 
 const Reset = () => {
+ const navigate =  useNavigate()
+  const {username} = useAuthStore(state => state.auth)
   const formik = useFormik({
     initialValues: {
       password: "",
@@ -14,7 +19,15 @@ const Reset = () => {
     validateOnBlur: false,
     validateOnChange: false,
     onSubmit: async (values) => {
-      console.log(values);
+      const restPromise = resetPassword({username,password:values.password})
+
+      toast.promise(restPromise,{
+        loading:"Updating...!",
+        success:<b>Reset Successfully...!</b>,
+        error:<b>Could not Reset</b>
+      })
+
+      restPromise.then(()=>{navigate('/password')})
     },
   });
   return (

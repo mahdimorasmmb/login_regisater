@@ -1,4 +1,5 @@
 import { toast } from "react-hot-toast";
+import { authenticate } from "./helper";
 
 type ErrorInput = {
   password?: string;
@@ -10,9 +11,15 @@ type ErrorInput = {
 export const usernameValidate = async (values: { username: string }) => {
   const error = usernameVerify(values, {});
 
-  if (error.username) {
-    return error;
+
+  if(values.username) {
+    const {status} = await authenticate(values.username) 
+
+    if(status !==200) {
+      error.exist = toast.error('User Does not exist ')
+    }
   }
+  return error;
 };
 
 export const passwordValidate = async (values: { password: string }) => {
